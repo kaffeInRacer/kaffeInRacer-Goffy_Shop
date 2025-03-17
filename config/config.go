@@ -1,6 +1,7 @@
 package config
 
 import (
+	"database/sql"
 	"github.com/joho/godotenv"
 	"log"
 	"os"
@@ -30,6 +31,7 @@ func LoadConfig(path string) configurationApp {
 			serverApp: ServerApp{
 				Host: getEnvStr("SERVER_HOST", "localhost"),
 				Port: getEnvStr("SERVER_PORT", "8080"),
+				Mode: getEnvStr("SERVER_MODE", "dev"),
 			},
 			postgresSQL: PostgresSQL{
 				Host:    getEnvStr("POSTGRES_HOSTNAME", "localhost"),
@@ -47,6 +49,7 @@ func LoadConfig(path string) configurationApp {
 type ServerApp struct {
 	Host string
 	Port string
+	Mode string
 }
 
 func (c *confApp) ServerApp() ServerApp {
@@ -60,6 +63,7 @@ type PostgresSQL struct {
 	Pass    string
 	Name    string
 	SSLMode string
+	Db      *sql.DB
 }
 
 func (c *confApp) PostgresSQL() PostgresSQL {

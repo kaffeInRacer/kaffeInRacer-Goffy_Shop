@@ -15,7 +15,7 @@ migrate-down:
 	@migrate -path pkg/database/postgresql/migrations -database "postgres://$(strip ${POSTGRES_USER}):$(strip ${POSTGRES_PASSWORD})@$(strip ${POSTGRES_HOSTNAME}):$(strip ${POSTGRES_PORT})/$(strip ${POSTGRES_DB})?sslmode=disable" -verbose down
 
 migrate-create:
-	migrate create -ext sql -dir ./pkg/database/postgresql/migrations/ -seq $(name)
+	@migrate create -ext sql -dir ./pkg/database/postgresql/migrations/ -seq $(name)
 
 migrate-force:
 	@migrate -path pkg/database/postgresql/migrations -database "postgres://$(strip ${POSTGRES_USER}):$(strip ${POSTGRES_PASSWORD})@$(strip ${POSTGRES_HOSTNAME}):$(strip ${POSTGRES_PORT})/$(strip ${POSTGRES_DB})?sslmode=disable" force 5
