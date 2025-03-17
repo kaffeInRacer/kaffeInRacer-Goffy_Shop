@@ -1,26 +1,29 @@
 package routes
 
 import (
+	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"net/http"
+	"kaffein/modules/users/usersRepository"
+	"kaffein/pkg/database/postgresql"
+	"log"
 )
 
 func SetupRoute(router *gin.Engine) *gin.Engine {
-	// Contoh route
-	router.GET("/", func(c *gin.Context) {
-		c.JSON(200, gin.H{"message": "Welcome to the API"})
-	})
 
-	router.POST("/post", func(c *gin.Context) {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad Request"})
-	})
+	db := postgresql.GetDBPostgreSQL()
+	//user := &[]domain.Users{}
 
-	router.GET("/ping", func(c *gin.Context) {
-		x := []rune("abcdefghijklmnopq")
-		fmt.Println(x[:1000])
-		c.JSON(200, gin.H{"message": "pong"})
-	})
+	UserRepository := usersRepository.NewUsersRepository(db)
+	res, err := UserRepository.FetchAll(context.Background())
+	if err != nil {
+		log.Fatal("Error fetching user:", err)
+	}
+
+	// Cek apakah user ditemukan sebelum mencetak
+	for _, re := range res {
+		fmt.Println(re)
+	}
 
 	return router
 }

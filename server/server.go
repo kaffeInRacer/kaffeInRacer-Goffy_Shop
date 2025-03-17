@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"kaffein/config"
+	"kaffein/pkg/database/postgresql"
+	"kaffein/routes"
 	"log"
 	"net/http"
 	"os"
@@ -19,32 +21,34 @@ type Application struct {
 	PgSQL  config.PostgresSQL
 }
 
-func (app *Application) ServeHTTP(router *gin.Engine) {
+func (app *Application) ServeHTTP() {
 	addr := fmt.Sprintf("%s:%s", app.Server.Host, app.Server.Port)
+	gin.SetMode(gin.DebugMode)
+	postgresql.ConnectionPgSQL(app.PgSQL)
 
 	srv := http.Server{
 		Addr:    addr,
-		Handler: router,
+		Handler: routes.SetupRoute(gin.Default()),
 	}
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
 
 	go func() {
-		log.Printf("Server running on %s", addr)
+		log.Printf("[INFO] Start server at %s", addr)
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatalf("Failed to listen: %s", err)
 		}
 	}()
 
 	<-quit
-	log.Println("Shutting down server...")
+	log.Println("[WARNING] Shutting down server...")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {
-		log.Fatalf("Server Shutdown Failed: %+v", err)
+		log.Fatalf("[ALERT] Server Shutdown Failed: %+v", err)
 	}
 
-	log.Println("Server gracefully stopped")
+	log.Println("[INFO] Server gracefully stopped")
 }
